@@ -7,15 +7,17 @@ module Priceable
     price_fields.each do |price_field|
       suffix = SUFFIXES.detect { |suffix| self.attribute_method? "#{price_field}#{suffix}".to_sym }
 
-      puts "Error: Unable to find valid database field for `#{price_field}#{suffix}'" unless suffix
-      next unless suffix
-
+      unless suffix
+        puts "Error: Unable to find valid database field for `#{price_field}#{suffix}'" unless suffix
+        next 
+      end
+      
       define_method price_field do
         unless send("#{price_field}#{suffix}".to_sym).nil?
           send("#{price_field}#{suffix}".to_sym) / 100.0
         else
           0.0
-        extend
+        end
       end  
       define_method "#{price_field}=".to_sym do |new_price|
         send("#{price_field}#{suffix}=".to_sym, (new_price.to_f * 100).round)
@@ -27,7 +29,6 @@ module Priceable
         attr_accessible *price_fields
       end
     end
-    
   end
 end
 
